@@ -28,7 +28,7 @@ require('lazy').setup({
     { 'kylechui/nvim-surround' },
     { 'mbbill/undotree' },
     { 'numToStr/Comment.nvim', event = 'User load-comment' },
-    { 'nvim-treesitter/nvim-treesitter' },
+    { 'nvim-treesitter/nvim-treesitter', branch = 'main' },
     { 'bkad/CamelCaseMotion' },
     { 'dstein64/nvim-scrollview' },
     { 'nvim-lualine/lualine.nvim' },

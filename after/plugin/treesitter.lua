@@ -1,28 +1,76 @@
-local vim = vim -- fix lsp warning
+local pcall = copcall or pcall
 
-local path = vim.fn.stdpath("data")
-vim.opt.runtimepath:append(path)
+local path = vim.fn.stdpath("data") .. '/parsers'
 
-require'nvim-treesitter.configs'.setup{
-    -- warning from lua-language-server for not having these fields which are optional (but config type says are required)
-    modules = {}, ignore_install = {}, ensure_installed = {},
+local parsers = require('nvim-treesitter.parsers')
+local config = require('nvim-treesitter.config')
+local install = require('nvim-treesitter.install')
+local async = require('nvim-treesitter.async')
 
-    parser_install_dir = path,
-    sync_install = false,
-    auto_install = true,
-    highlight = {
-        enable = true,
-        disable = function(lang, buf)
-            local max_filesize = 1000 * 1024
-            local ok, stats = pcall(vim.loop.fs_stat, vim.api.nvim_buf_get_name(buf))
-            if ok and stats and stats.size > max_filesize then
-                return true
-            end
-        end,
-        additional_vim_regex_highlighting = false,
-    },
-    -- note: pressing cc inside <style> inside .html moves the screen
-    -- Check runtime/indent/html.vim func s:CSSIndent()  at  if below_end_brace
-    -- It moves the cursor offscreen!
-    indent = { enable = true },
+require('nvim-treesitter').setup{
+    install_dir = path,
 }
+
+local function getLoadingFiletype(buf)
+    local ok, value = pcall(vim.api.nvim_buf_get_var, buf, 'my_loading_filetype')
+    if not ok then
+        value = 0
+    end
+    return value
+end
+
+local installing = nil
+
+---@async
+local function loadParser(buf)
+    local value = getLoadingFiletype(buf)
+    value = value + 1
+    vim.api.nvim_buf_set_var(buf, 'my_loading_filetype', value)
+
+    local filetype = vim.api.nvim_get_option_value('ft', { buf = buf })
+    if filetype == 'typescriptreact' then
+        filetype = 'tsx'
+    end
+
+    local parserInfo = parsers[filetype]
+    if parserInfo == nil then
+        return
+    end
+
+    local installed = config.get_installed('parsers')
+    local found = false
+    for _, name in ipairs(installed) do
+        if name == filetype then
+            found = true
+            break
+        end
+    end
+    if not found then
+        if installing then -- bug: it locks neovim if installing the same language twice
+            pcall(async.await, installing)
+        end
+
+        installing = install.install({ filetype }, { summary = true })
+        if not async.await(installing) then
+            return
+        end
+    end
+
+    if getLoadingFiletype(buf) ~= value then
+        return
+    end
+
+    vim.treesitter.start(buf, filetype)
+    vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+end
+
+vim.api.nvim_create_autocmd('FileType', {
+    callback = function(args)
+        async.arun(function()
+            local ok, err = pcall(loadParser, args.buf)
+            if not ok then
+                vim.notify('Error loading parser: ' .. err, vim.log.levels.ERROR)
+            end
+        end)
+    end,
+})

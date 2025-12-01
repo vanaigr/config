@@ -1,5 +1,7 @@
 local vim = vim -- fix lsp warning
 
+-----vim.on_key(function(a, b) print(a, b) end)
+
 pcall(vim.api.nvim_exec2, 'language en_US', {})
 
 function LoadModule(name)
@@ -36,7 +38,7 @@ end, {})
 vim.api.nvim_create_user_command('UP' , "call search('[A-Z][A-Z]', 'besW')", {})
 vim.api.nvim_create_user_command('UPN', "call search('[A-Z][A-Z]', 'esW')", {})
 
-vim.g.editorconfig = false
+--vim.g.editorconfig = false
 
 vim.g.mapleader = ' '
 
