@@ -1,0 +1,28 @@
+modmap:
+  - name: Keys
+    remap:
+      CapsLock: Super_L
+      Super_L: Shift_L
+      Alt_R: Ctrl_L
+      Ctrl_R: Shift_L
+
+keymap:
+  - name: Alt keys
+    remap:
+      Alt-h: left
+      Alt-j: down
+      Alt-k: up
+      Alt-l: right
+      Alt-w: backspace
+      Alt-m: Enter
+      Alt-i: Esc
+      Alt-u: Esc
+      Esc: reserved
+      Super-z:
+        remap:
+          u:
+            launch: ["/usr/local/bin/dmenu_unicode/launch.sh"]
+          b:
+            launch: ["/home/artarar/shortcuts/bugg"]
+          c:
+            launch: ["/usr/bin/copyq", "show"]
