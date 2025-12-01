@@ -2,7 +2,7 @@ local m = require('mapping')
 
 m.n('<leader>w', '<Plug>CamelCaseMotion_w')
 m.n('<leader>b', 'h<Plug>CamelCaseMotion_b')
-m.n('<leader>e', '<Plug>CamelCaseMotion_e')
+--m.n('<leader>e', '<Plug>CamelCaseMotion_e')
 m.n('<leader>ge', '<Plug>CamelCaseMotion_ge')
 
 m.x('<leader>w', '<Plug>CamelCaseMotion_iw')

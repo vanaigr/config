@@ -135,6 +135,7 @@ end)
 require("lspconfig.configs").vtsls = require("vtsls").lspconfig
 conf('typescript', function()
     lspconfig.vtsls.setup({
+        capabilities = capabilities,
     })
 end)
 
@@ -177,18 +178,21 @@ end)
 conf('rust', function()
     lspconfig.rust_analyzer.setup {
         cmd = { mason_path .. '/rust-analyzer' },
+        capabilities = capabilities,
     }
 end)
 
 conf('cmake', function()
     lspconfig.cmake.setup {
         cmd = { mason_path .. '/cmake-language-server' },
+        capabilities = capabilities,
     }
 end)
 
 conf('tailwind', function()
     lspconfig.tailwindcss.setup {
         cmd = { mason_path .. '/tailwindcss-language-server' },
+        capabilities = capabilities,
     }
 end, low_perf)
 
@@ -196,5 +200,6 @@ conf('csharp', function()
     -- https://github.com/OmniSharp/omnisharp-roslyn/issues/2577
     lspconfig.omnisharp.setup {
         cmd = { mason_path .. '/omnisharp' },
+        capabilities = capabilities,
     }
 end)

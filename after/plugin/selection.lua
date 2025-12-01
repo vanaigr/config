@@ -1,3 +1,4 @@
+--[[
 local m = require('mapping')
 local sel = require('incselection')
 
@@ -19,3 +20,4 @@ end)
 m.x('\\', function()
     sel.scope_incremental()
 end)
+]]
