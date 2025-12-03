@@ -43,3 +43,16 @@ fi
 # `/etc/grub.d/30_os-prober`
 
 set `quick_boot="0"`
+
+# Screen tearing
+
+`/etc/X11/xorg.conf.d/20-modesetting.conf`:
+
+```
+Section "Device"
+   Identifier "Modesetting"
+   Driver "modesetting"
+   Option "AccelMethod" "glamor"
+   Option "DRI" "3"
+EndSection
+```
