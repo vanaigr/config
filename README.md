@@ -1,3 +1,5 @@
+Remember to use absolute paths in `ln`
+
 # Xremap:
 
 1. install with cargo
@@ -12,6 +14,17 @@ echo 'KERNEL=="uinput", GROUP="input", TAG+="uaccess"' | sudo tee /etc/udev/rule
 3. link `xremap.service` to `~/.config/systemd/user/xremap.service`
 
 4. `systemctl --user enable xremap.service`
+
+# Power button
+
+Add to `/etc/systemd/logind.conf`:
+
+```
+HandlePowerKey=suspend
+HandlePowerKeyLongPress=poweroff
+```
+
+Symlinking dropin files doesn't work because Yes.
 
 # Auto login:
 
