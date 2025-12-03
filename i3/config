@@ -153,7 +153,8 @@ bar {
 bindsym XF86PowerOff nop
 
 exec --no-startup-id xrdb "$HOME/.Xresources"
-exec_always --no-startup-id $HOME/.cargo/bin/xremap $HOME/.config/xremap/config.yml
+# TODO:
+# exec_always --no-startup-id $HOME/.cargo/bin/xremap $HOME/.config/xremap/config.yml
 ##########################################
 #                                        #
 #    DEAR X, SERVER PLEEEAASSEE DONT     #
