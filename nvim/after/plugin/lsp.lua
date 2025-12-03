@@ -112,7 +112,7 @@ local function conf(name, f, skip)
 end
 
 conf('lua', function()
-    lspconfig.lua_ls.setup{
+    vim.lsp.config('lua_ls', {
         cmd = { mason_path .. '/lua-language-server' },
         capabilities = capabilities,
         settings = {
@@ -123,18 +123,20 @@ conf('lua', function()
                 },
             }
         }
-    }
+    })
 end)
 conf('clang', function()
-    lspconfig.clangd.setup{
+    vim.lsp.config('clangd', {
         cmd = { mason_path .. '/clangd' },
         capabilities = capabilities,
-    }
+    })
 end)
 
-require("lspconfig.configs").vtsls = require("vtsls").lspconfig
+--require("lspconfig.configs").vtsls = require("vtsls").lspconfig
 conf('typescript', function()
-    lspconfig.vtsls.setup({
+    require("vtsls")
+    vim.lsp.enable('vtsls')
+    vim.lsp.config('vtsls', {
         capabilities = capabilities,
     })
 end)
@@ -176,30 +178,30 @@ end)
 -- conf('css', function() lspconfig.cssls.setup{} end)
 
 conf('rust', function()
-    lspconfig.rust_analyzer.setup {
+    vim.lsp.config('rust_analyzer', {
         cmd = { mason_path .. '/rust-analyzer' },
         capabilities = capabilities,
-    }
+    })
 end)
 
 conf('cmake', function()
-    lspconfig.cmake.setup {
+    vim.lsp.config('cmake', {
         cmd = { mason_path .. '/cmake-language-server' },
         capabilities = capabilities,
-    }
+    })
 end)
 
 conf('tailwind', function()
-    lspconfig.tailwindcss.setup {
+    vim.lsp.config('tailwindcss', {
         cmd = { mason_path .. '/tailwindcss-language-server' },
         capabilities = capabilities,
-    }
+    })
 end, low_perf)
 
 conf('csharp', function()
     -- https://github.com/OmniSharp/omnisharp-roslyn/issues/2577
-    lspconfig.omnisharp.setup {
+    vim.lsp.config('omnisharp', {
         cmd = { mason_path .. '/omnisharp' },
         capabilities = capabilities,
-    }
+    })
 end)
