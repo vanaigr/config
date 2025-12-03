@@ -40,6 +40,8 @@ vim.api.nvim_create_user_command('UPN', "call search('[A-Z][A-Z]', 'esW')", {})
 
 --vim.g.editorconfig = false
 
+vim.g.clipboard = 'xclip'
+
 vim.g.mapleader = ' '
 
 vim.opt.langremap = false

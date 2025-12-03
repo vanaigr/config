@@ -4,7 +4,7 @@ modmap:
       CapsLock: Super_L
       Super_L: Shift_L
       Alt_R: Ctrl_L
-      Ctrl_R: Shift_L
+#      Ctrl_R: Shift_L
 
 keymap:
   - name: Alt keys
