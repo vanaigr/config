@@ -1,8 +1,10 @@
 #!/bin/sh
 
-id=$(xinput list --id-only "ELAN072B:00 04F3:30A0 Touchpad")
+id=$(xinput list --name-only | grep -i "touchpad")
 
-xinput set-prop $id "libinput Tapping Enabled" 1
-xinput set-prop $id "libinput Tapping Drag Enabled" 0
+xinput set-prop "$id" "libinput Tapping Enabled" 1
+xinput set-prop "$id" "libinput Tapping Drag Enabled" 0
 # slower scroll (higher value - slower)
-xinput set-prop $id "libinput Scrolling Pixel Distance" 40
+xinput set-prop "$id" "libinput Scrolling Pixel Distance" 20
+xinput set-prop "$id" "libinput Accel Speed" 0.5
+
