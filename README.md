@@ -46,13 +46,13 @@ set `quick_boot="0"`
 
 # Screen tearing
 
-`/etc/X11/xorg.conf.d/20-modesetting.conf`:
+`sudo apt install picom`
 
-```
-Section "Device"
-   Identifier "Modesetting"
-   Driver "modesetting"
-   Option "AccelMethod" "glamor"
-   Option "DRI" "3"
-EndSection
-```
+link `./picom` to `~/.config/picom`
+
+It should auto-start
+
+
+# Misc
+
+`gsettings set org.blueman.plugins.powermanager auto-power-on false`

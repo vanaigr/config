@@ -1,3 +1,4 @@
+# https://sharphook.tolik.io/articles/keycodes.html
 modmap:
   - name: Keys
     remap:
@@ -13,11 +14,22 @@ keymap:
       Alt-j: down
       Alt-k: up
       Alt-l: right
-      Alt-w: backspace
+      Alt-w: backspace # for now to learn
+      #Alt-w: reserved # for now to learn
+      Alt-f: backspace
       Alt-m: Enter
       Alt-i: Esc
       Alt-u: Esc
       Esc: reserved
+
+      # If you hash sysrq 5 times and reverse the letters, you will get prtsc,
+      # so this is obviously(.) print screen key.
+      # doesn't work now. WTF
+      sysrq:
+        launch: ["flameshot", "gui"]
+
+      #Alt-e: reserved # for now to learn
+
       Super-z:
         remap:
           u:

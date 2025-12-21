@@ -8,3 +8,5 @@ xinput set-prop "$id" "libinput Tapping Drag Enabled" 0
 xinput set-prop "$id" "libinput Scrolling Pixel Distance" 20
 xinput set-prop "$id" "libinput Accel Speed" 0.5
 
+id=$(xinput list --name-only | grep -i "Receiver Mouse")
+xinput set-prop "$id" "libinput Accel Speed" 0.9
