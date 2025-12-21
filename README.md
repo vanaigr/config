@@ -52,7 +52,11 @@ link `./picom` to `~/.config/picom`
 
 It should auto-start
 
+# dmenu unicode
 
-# Misc
+/usr/local/bin/dmenu_unicode.sh:
 
-`gsettings set org.blueman.plugins.powermanager auto-power-on false`
+```shell
+#!/bin/sh
+node /home/me/gh/config/dmenu_unicode/run.js
+```

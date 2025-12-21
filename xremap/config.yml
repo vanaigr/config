@@ -33,7 +33,7 @@ keymap:
       Super-z:
         remap:
           u:
-            launch: ["/usr/local/bin/dmenu_unicode/launch.sh"]
+            launch: ["/usr/local/bin/dmenu_unicode.sh"]
           b:
             launch: ["/home/artarar/shortcuts/bugg"]
           c:
