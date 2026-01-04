@@ -202,7 +202,8 @@ local function scroll(m1)
 
         local distance = math.floor(vim.fn.winheight(0) * 0.4)
         vim.api.nvim_feedkeys(distance .. m1, 'nx', false)
-        local target_lnum = vim.api.nvim_win_get_cursor(0)[1]
+        local target_position = vim.api.nvim_win_get_cursor(0)
+        local target_lnum = target_position[1]
 
         local seen = { [start_row] = true }
         while true do
@@ -228,6 +229,8 @@ local function scroll(m1)
                 break
             end
         end
+
+        vim.api.nvim_win_set_cursor(0, target_position)
     end
 end
 
