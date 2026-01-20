@@ -42,7 +42,7 @@ local function search_root(path, stop)
 end
 
 ---@return string?
-local function project_root(dir)
+local function narrow_project_root(dir)
     local git_ok, git_res = pcall(git_root, dir)
     local root_ok, root_res = pcall(search_root, dir, git_ok and git_res or nil)
 
@@ -57,12 +57,33 @@ local function project_root(dir)
     end
 end
 
+---@return string?
+local function wide_project_root(dir)
+    local git_ok, git_res = pcall(git_root, dir)
+    local root_ok, root_res = pcall(search_root, dir, git_ok and git_res or nil)
+
+    git_ok = git_ok and (not not git_res)
+    root_ok = root_ok and (not not root_res)
+
+
+    if git_ok then
+        return git_res
+    elseif root_ok then
+        return root_res
+    end
+end
+
 local function buffer_dir()
     return vim.fn.expand("%:p:h")
 end
 
-local function getProjectDir()
-    local root = project_root(vim.fn.expand("%:p"))
+local function getProjectDir(wide)
+    local root
+    if wide then
+        root = wide_project_root(vim.fn.expand("%:p"))
+    else
+        root = narrow_project_root(vim.fn.expand("%:p"))
+    end
     if root and root ~= '' then
         return root
     else
@@ -157,23 +178,13 @@ m.n('<leader>ff', function()
     results_title = 'project files',
   }
 end)
-m.n('<leader>Ff', function()
+m.n('<leader>fF', function()
   setup()
   builtin.find_files{
-    cwd = buffer_dir(),
+    cwd = getProjectDir(true),
     path_display = fix_path_display,
-    --no_ignore = false,
-    --hidden = false,
-    results_title = 'project files',
-  }
-end)
-m.n('<leader>fa', function()
-  setup()
-  builtin.find_files{
-    cwd = getProjectDir(),
-    path_display = fix_path_display,
-    no_ignore = true,
-    hidden = true,
+    --no_ignore = true,
+    --hidden = true,
     results_title = 'project files',
   }
 end)
@@ -240,46 +251,10 @@ m.n('<leader>fs', function()
         results_title = 'grep',
     }
 end)
-m.x('<leader>fs', function()
-    setup()
-    builtin.live_grep{
-        cwd = getProjectDir(),
-        default_text = getSelectionText(),
-        path_display = fix_path_display,
-        results_title = 'grep',
-    }
-end)
-m.n('<leader>Fs', function()
-    setup()
-    builtin.live_grep{
-        cwd = buffer_dir(),
-        path_display = fix_path_display,
-        results_title = 'grep',
-    }
-end)
-m.x('<leader>Fs', function()
-    setup()
-    builtin.live_grep{
-        cwd = buffer_dir(),
-        default_text = getSelectionText(),
-        path_display = fix_path_display,
-        results_title = 'grep',
-    }
-end)
-
 m.n('<leader>fS', function()
     setup()
     builtin.live_grep{
-        cwd = getProjectDir(),
-        path_display = fix_path_display,
-        results_title = 'grep',
-        additional_args = { '--hidden', '--ignore-vcs' },
-    }
-end)
-m.x('<leader>fS', function()
-    builtin.live_grep{
-        cwd = getProjectDir(),
-        default_text = getSelectionText(),
+        cwd = getProjectDir(true),
         path_display = fix_path_display,
         results_title = 'grep',
         additional_args = { '--hidden', '--ignore-vcs' },

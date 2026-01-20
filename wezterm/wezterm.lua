@@ -2,11 +2,6 @@ local wezterm = require 'wezterm'
 local c = {}
 local config = c
 
---c.automatically_reload_config = false
-
---c.freetype_load_target = 'HorizontalLcd'
---c.freetype_render_target = 'HorizontalLcd'
-
 c.enable_scroll_bar = true
 c.enable_tab_bar = false
 c.font = wezterm.font'DejaVu Sans Mono'
