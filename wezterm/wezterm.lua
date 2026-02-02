@@ -2,6 +2,9 @@ local wezterm = require 'wezterm'
 local c = {}
 local config = c
 
+-- To see if there are issues with font rendering
+front_end = "WebGpu"
+
 c.enable_scroll_bar = true
 c.enable_tab_bar = false
 c.font = wezterm.font'DejaVu Sans Mono'

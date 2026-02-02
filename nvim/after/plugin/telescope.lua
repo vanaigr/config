@@ -168,6 +168,20 @@ local function fix_path_display(opts, path) -- expects utf8
     return path:sub(last_pos + 1)
 end
 
+local function getSelectionText()
+    setup()
+    local p1 = vim.fn.getpos('v')
+    local p2 = vim.fn.getpos('.')
+    return table.concat(vim.api.nvim_buf_get_text(
+        0,
+        p1[2] - 1,
+        p1[3] - 1,
+        p2[2] - 1,
+        p2[3] - 1,
+        {}
+    ), '\n') -- does telescope accept \n ?
+end
+
 m.n('<leader>ff', function()
   setup()
   builtin.find_files{
@@ -188,6 +202,26 @@ m.n('<leader>fF', function()
     results_title = 'project files',
   }
 end)
+
+m.x('<leader>ff', function()
+  setup()
+  builtin.find_files{
+    cwd = getProjectDir(),
+    path_display = fix_path_display,
+    default_text = getSelectionText(),
+    results_title = 'project files',
+  }
+end)
+m.x('<leader>fF', function()
+  setup()
+  builtin.find_files{
+    cwd = getProjectDir(true),
+    path_display = fix_path_display,
+    default_text = getSelectionText(),
+    results_title = 'project files',
+  }
+end)
+
 m.n('<leader>fo', function()
   setup()
   builtin.find_files{
@@ -255,6 +289,26 @@ m.n('<leader>fS', function()
     setup()
     builtin.live_grep{
         cwd = getProjectDir(true),
+        path_display = fix_path_display,
+        results_title = 'grep',
+        additional_args = { '--hidden', '--ignore-vcs' },
+    }
+end)
+
+m.x('<leader>fs', function()
+    setup()
+    builtin.live_grep{
+        cwd = getProjectDir(),
+        default_text = getSelectionText(),
+        path_display = fix_path_display,
+        results_title = 'grep',
+    }
+end)
+m.x('<leader>fS', function()
+    setup()
+    builtin.live_grep{
+        cwd = getProjectDir(true),
+        default_text = getSelectionText(),
         path_display = fix_path_display,
         results_title = 'grep',
         additional_args = { '--hidden', '--ignore-vcs' },

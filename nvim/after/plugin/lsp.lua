@@ -90,7 +90,10 @@ vim.api.nvim_create_autocmd('LspDetach', {
 
 local ok, capabilities = pcall(function()
     -- This is not enough for some servers (lua_ls). So also check for them on cmp side
-    return require('cmp_nvim_lsp').default_capabilities{ snippet_support = false }
+    return require('cmp_nvim_lsp').default_capabilities{
+        snippetSupport = false,
+        preselectSupport = false,
+    }
 end)
 if not ok then capabilities = nil end
 
@@ -140,6 +143,31 @@ conf('typescript', function()
         capabilities = capabilities,
     })
 end)
+
+--[[
+conf('typescript_go', function()
+    vim.lsp.config("ts_go_ls", {
+        cmd = {
+            vim.loop.os_homedir() .. "/gh/typescript-go/built/local/lsp-logger.mts",
+            --vim.loop.os_homedir() .. "/gh/typescript-go/built/local/tsgo",
+            --"lsp",
+            --'stdio',
+        },
+        filetypes = {
+            "javascript",
+            "javascriptreact",
+            "javascript.jsx",
+            "typescript",
+            "typescriptreact",
+            "typescript.tsx",
+        },
+        root_markers = { "tsconfig.json", "jsconfig.json", "package.json", ".git" },
+    })
+    vim.lsp.enable("ts_go_ls", {
+        capabilities = capabilities,
+    })
+end)
+    ]]
 
 --[[
 conf('typescript-tools', function()
