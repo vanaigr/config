@@ -12,6 +12,13 @@ local function update()
     -- don't display marks in cmdwin
     if vim.fn.getcmdwintype() ~= '' then return end
 
+    -- Don't display in file manager. 1 - useless, 2 - auto sign column jumps around
+    -- on first nav. Not configurable
+    local has_role = pcall(vim.api.nvim_win_get_var, 0, 'triptych_role')
+    if has_role then
+        return
+    end
+
     ms.update_marks()
 end
 
