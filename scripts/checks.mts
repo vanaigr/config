@@ -49,6 +49,7 @@ const ESLINT_CONFIG_NOT_FOUND_PATTERNS = [
   /could not find config file/i,
   /no eslint configuration found/i,
   /eslint couldn't find a configuration file/i,
+  /eslint couldn't find an eslint\.config/i,
   /error: no configuration file found/i,
 ];
 
