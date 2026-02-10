@@ -28,7 +28,7 @@ function getDirectories(basePath: string): string[] {
   });
 }
 
-type CheckType = "type" | "lint";
+type CheckType = "type" | "lint" | "format";
 
 type CheckStatus = "passed" | "failed" | "skipped";
 
@@ -70,6 +70,8 @@ async function runCheck(folder: string, checkType: CheckType): Promise<CheckResu
   const task = new Promise((resolve) => {
     const args = checkType === "type"
       ? ["exec", "tsc", "--noEmit"]
+      : checkType === "format"
+      ? ["exec", "prettier", "--check", "."]
       : ["exec", "eslint", "."];
 
     const child = spawn("pnpm", args, { cwd: folder });
@@ -119,11 +121,11 @@ function parseArgs(): CheckType[] {
 
   const checksSet = new Set<CheckType>()
   for (const arg of args) {
-    if (arg === "type" || arg === "lint") {
+    if (arg === "type" || arg === "lint" || arg === "format") {
       checksSet.add(arg);
     } else {
       console.error(`Unknown argument: ${arg}`);
-      console.error("Usage: checks.mts [type] [lint]");
+      console.error("Usage: checks.mts [type] [lint] [format]");
       process.exit(1);
     }
   }
@@ -131,6 +133,7 @@ function parseArgs(): CheckType[] {
   const checks = [];
   if(checksSet.has('type')) checks.push('type');
   if(checksSet.has('lint')) checks.push('lint');
+  if(checksSet.has('format')) checks.push('format');
 
   return checks;
 }
@@ -194,7 +197,7 @@ async function main() {
     markdown += `### ${relativePath}\n\n`;
 
     for (const result of folderResults) {
-      const label = result.checkType === "type" ? "Type Check" : "Lint";
+      const label = result.checkType === "type" ? "Type Check" : result.checkType === "format" ? "Format" : "Lint";
       if (result.status === "passed") {
         markdown += `#### ${label}: ✅ Passed\n\n`;
       } else if (result.status === "skipped") {
