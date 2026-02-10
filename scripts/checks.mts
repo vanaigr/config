@@ -2,7 +2,7 @@
 
 import { execSync, spawn } from "child_process";
 import { readdirSync, statSync, writeFileSync, existsSync } from "fs";
-import { join } from "path";
+import { join, resolve } from "path";
 import { homedir } from "os";
 
 const tasks = new Set<Promise<unknown>>()
@@ -115,42 +115,59 @@ async function runCheck(folder: string, checkType: CheckType): Promise<CheckResu
     return await task
 }
 
-function parseArgs(): CheckType[] {
+interface ParsedArgs {
+  checkTypes: CheckType[];
+  directories: string[];
+}
+
+function parseArgs(): ParsedArgs {
   const args = process.argv.slice(2);
-  if (args.length === 0) return ["type"];
+  const separatorIndex = args.indexOf("--");
+
+  const checkArgs = separatorIndex === -1 ? args : args.slice(0, separatorIndex);
+  const directories = separatorIndex === -1 ? [] : args.slice(separatorIndex + 1);
 
   const checksSet = new Set<CheckType>()
-  for (const arg of args) {
+  for (const arg of checkArgs) {
     if (arg === "type" || arg === "lint" || arg === "format") {
       checksSet.add(arg);
     } else {
       console.error(`Unknown argument: ${arg}`);
-      console.error("Usage: checks.mts [type] [lint] [format]");
+      console.error("Usage: checks.mts [type] [lint] [format] [-- <dir>...]");
       process.exit(1);
     }
   }
 
-  const checks = [];
-  if(checksSet.has('type')) checks.push('type');
-  if(checksSet.has('lint')) checks.push('lint');
-  if(checksSet.has('format')) checks.push('format');
+  const checkTypes: CheckType[] = [];
+  if (checksSet.size === 0) {
+    checkTypes.push("type");
+  } else {
+    if(checksSet.has('type')) checkTypes.push('type');
+    if(checksSet.has('lint')) checkTypes.push('lint');
+    if(checksSet.has('format')) checkTypes.push('format');
+  }
 
-  return checks;
+  return { checkTypes, directories };
 }
 
 async function main() {
-  const checkTypes = parseArgs();
+  const { checkTypes, directories } = parseArgs();
   const repoRoot = findRepoRoot(process.cwd());
   console.log(`Repo root: ${repoRoot}`);
   console.log(`Running: ${checkTypes.join(", ")}`);
 
-  const appsDir = join(repoRoot, "apps");
-  const packagesDir = join(repoRoot, "packages");
+  let allFolders: string[];
+  if (directories.length > 0) {
+    allFolders = directories.map((d) => resolve(d));
+  } else {
+    const appsDir = join(repoRoot, "apps");
+    const packagesDir = join(repoRoot, "packages");
 
-  const apps = getDirectories(appsDir).map((name) => join(appsDir, name));
-  const packages = getDirectories(packagesDir).map((name) => join(packagesDir, name));
+    const apps = getDirectories(appsDir).map((name) => join(appsDir, name));
+    const packages = getDirectories(packagesDir).map((name) => join(packagesDir, name));
 
-  const allFolders = [...apps, ...packages].filter((folder) => existsSync(join(folder, "tsconfig.json")));
+    allFolders = [...apps, ...packages].filter((folder) => existsSync(join(folder, "tsconfig.json")));
+  }
 
   const checkTasks: { folder: string; checkType: CheckType }[] = [];
   for (const folder of allFolders) {
