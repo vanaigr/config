@@ -60,3 +60,7 @@ It should auto-start
 #!/bin/sh
 node /home/me/gh/config/dmenu_unicode/run.js
 ```
+
+# diodon
+
+Clipboard history
