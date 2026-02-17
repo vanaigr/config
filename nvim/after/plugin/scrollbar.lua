@@ -1,32 +1,3 @@
-if false then
-require("scrollbar").setup{
-    max_lines = 10000,
-    handle = {
-        text = " ",
-        blend = 10,
-        highlight = "CursorColumn",
-        hide_if_all_visible = false,
-    },
-    marks = {
-        Search = { priority = 1 },
-        Error = { priority = 2 },
-        Warn = { priority = 3 },
-        Info = { priority = 5 },
-        Hint = { priority = 4 },
-        Misc = { priority = 6 },
-    },
-    excluded_buftypes = { },
-    handlers = {
-        cursor = false,
-        diagnostic = true,
-        gitsigns = false,
-        handle = true,
-        search = false,
-        ale = false,
-    },
-}
-end
-
 require('scrollview').setup({
     excluded_filetypes = {},
     current_only = false,
@@ -35,6 +6,8 @@ require('scrollview').setup({
     --signs_overflow = 'right',
     signs_scrollbar_overlap = 'over',
     signs_max_per_row = 1,
+    scrollview_winblend = 50,
+    scrollview_winblend_gui = 50,
     signs_on_startup = {
         --'changelist',
         'conflicts',
@@ -58,3 +31,9 @@ require('scrollview').setup({
         vim.diagnostic.severity.ERROR
     }
 })
+
+-- I have no idea why it changing these in the config above doesn't work.
+vim.cmd([[
+let g:scrollview_winblend = 30
+let g:scrollview_winblend_gui = 30
+]])
