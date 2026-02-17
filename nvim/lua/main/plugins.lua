@@ -36,7 +36,7 @@ require('lazy').setup({
     { 'chrisgrieser/nvim-spider' },
     { 'simonmclean/triptych.nvim' },
     { 'FabijanZulj/blame.nvim' },
-    { 'hrsh7th/nvim-cmp' },
+    { 'vanaigr/nvim-cmp' },
     { 'hrsh7th/cmp-buffer' },
     { 'hrsh7th/cmp-cmdline' },
     { 'hrsh7th/cmp-nvim-lua' },
