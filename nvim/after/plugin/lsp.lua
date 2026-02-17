@@ -136,7 +136,7 @@ conf('clang', function()
 end)
 
 --require("lspconfig.configs").vtsls = require("vtsls").lspconfig
-conf('typescript', function()
+conf(false, 'typescript', function()
     require("vtsls")
     vim.lsp.enable('vtsls')
     vim.lsp.config('vtsls', {
@@ -144,14 +144,16 @@ conf('typescript', function()
     })
 end)
 
---[[
 conf('typescript_go', function()
     vim.lsp.config("ts_go_ls", {
         cmd = {
-            vim.loop.os_homedir() .. "/gh/typescript-go/built/local/lsp-logger.mts",
-            --vim.loop.os_homedir() .. "/gh/typescript-go/built/local/tsgo",
-            --"lsp",
-            --'stdio',
+            -- git clone <typescript-go link>
+            -- npm i
+            -- npm build
+            vim.loop.os_homedir() .. "/gh/typescript-go/built/local/tsgo",
+            -- https://github.com/zed-extensions/tsgo/blob/6f953412c94263d664d740154132662cf293e5aa/src/tsgo.rs#L197
+            "--lsp",
+            '--stdio',
         },
         filetypes = {
             "javascript",
@@ -167,7 +169,6 @@ conf('typescript_go', function()
         capabilities = capabilities,
     })
 end)
-    ]]
 
 --[[
 conf('typescript-tools', function()
