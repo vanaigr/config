@@ -44,6 +44,13 @@ require('lazy').setup({
     { 'neovim/nvim-lspconfig' },
     { 'Hoffs/omnisharp-extended-lsp.nvim' },
 
+    {
+        'nacro90/numb.nvim',
+        config = function()
+            require('numb').setup()
+        end,
+    },
+
     --[[
         'jackMort/ChatGPT.nvim' - very buggy. <C-W> just crashes it, and all other floating windows die.
         If I close the window while it is doing it's thing, also dies.
