@@ -53,6 +53,10 @@ m.n('<A-s>', '<cmd>w<cr>')
 m.n('<A-q>', '<cmd>q<cr>')
 m.n('<A-a>', '<cmd>so<cr>')
 
+-- <a-j/k> mapped system-wide, so accidentally work in insert mode (and occasionally break nvim-cmp)
+m.i('<up>', '')
+m.i('<down>', '')
+
 for _, key in ipairs{ 'E', 'gE' } do
   m.n(key, '<cmd>silent! normal! h'..key..'l<cr>')
 end
