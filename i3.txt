@@ -1,0 +1,178 @@
+
+Investigate how the app startup works in i3 wm (you are inside the repo). I'm debugging an app opening in a random workspace, possibly related to the current state (i.e. last focused
+  window, last workspace the app was opened, last change to some window state), or to how the workspace information is propagated (i.e. how i3 knows which workspace the window should
+  open in without explicit user configuration). So I need more details in those areas. No subagents
+
+● I'll dig into the i3 source to understand how new windows get placed on workspaces. Let me start by finding the relevant code paths.
+
+● Searched for 3 patterns, read 3 files (ctrl+o to expand)
+
+● Now let me look at what happens when exec is triggered, and how focused is used to determine the workspace.
+
+● Searched for 4 patterns (ctrl+o to expand)
+
+● Now let me look at how exec continues after cmd_exec and what the HANDLE_EMPTY_MATCH does, plus what happens for apps launched externally (not via i3's exec).
+
+● Searched for 1 pattern, read 1 file (ctrl+o to expand)
+
+● Now let me check the Startup_Sequence struct definition and the focused global:
+
+● Searched for 2 patterns (ctrl+o to expand)
+
+● Now I have a comprehensive picture. Here's the full analysis:
+
+  ---
+  How i3 decides where a new window opens
+
+  The decision logic lives in manage_window() (src/manage.c:106). When X11 sends a MapRequest event (a window wants to appear), handle_map_request() in src/handlers.c:283 calls
+  manage_window(). Here's the priority chain for workspace placement:
+
+  1. Swallow match (highest priority) — manage.c:282
+
+  Con *nc = con_for_window(search_at, cwindow, &match);
+  i3 first checks all containers in the tree for a swallow criterion that matches the new window (used by layout restore / for_window placeholders). If a match is found, the window goes into
+   that container regardless of workspace.
+
+  2. Assignment rules — manage.c:289-311
+
+  If no swallow match, i3 checks assign directives from the config (A_TO_WORKSPACE / A_TO_WORKSPACE_NUMBER). If the window's class/title/etc matches an assignment, it opens on that
+  workspace.
+
+  3. _NET_WM_DESKTOP property — manage.c:317-332
+
+  If the window has a _NET_WM_DESKTOP X property set to a specific desktop index (not 0xFFFFFFFF), i3 opens it on the corresponding workspace.
+
+  4. Startup notification (the key mechanism) — manage.c:333-342
+
+  This is the normal path for exec commands and the most relevant to your debugging:
+
+  } else if (startup_ws) {
+      DLOG("Using workspace on which this application was started (%s)\n", startup_ws);
+      nc = con_descend_tiling_focused(workspace_get(startup_ws));
+
+  The workspace is determined by the startup notification protocol (_NET_STARTUP_ID).
+
+  5. Fallback: focused global (lowest priority) — manage.c:344-351
+
+  If none of the above match, the window opens at the currently focused container:
+  } else {
+      if (focused->type == CT_CON && con_accepts_window(focused)) {
+          nc = focused;
+      } else {
+          nc = tree_open_con(NULL, cwindow);
+      }
+  }
+  tree_open_con(NULL, ...) uses focused->parent (src/tree.c:152).
+
+  ---
+  How startup notification works (the critical path)
+
+  When you run exec in i3 (without --no-startup-id):
+
+  1. start_application() (src/startup.c:136) creates a SnLauncherContext via libstartup-notification and snapshots the current workspace:
+  Con *ws = con_get_workspace(focused);   // line 165
+  sequence->workspace = sstrdup(ws->name); // line 168
+  1. The workspace of focused at the moment exec runs is recorded.
+  2. The child process inherits the DESKTOP_STARTUP_ID environment variable (set by sn_launcher_context_setup_child_process() at line 196). Well-behaved apps (GTK, Qt, etc.) read this and
+  set _NET_STARTUP_ID on their windows.
+  3. When the window maps, manage_window() calls startup_workspace_for_window() (manage.c:226) which looks up the startup ID in the sequence list and returns the stored workspace name.
+  4. The sequence is kept alive for 30 seconds after completion (startup.c:247) and has a 60-second hard timeout (startup.c:157).
+
+  ---
+  Why an app might open on a "random" workspace
+
+  Based on the code, here are the scenarios:
+
+  ┌────────────────────────────────────────────────────┬──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │                      Scenario                      │                                                          Why it happens                                                          │
+  ├────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ App launched externally (terminal, dmenu, shell)   │ No _NET_STARTUP_ID is set → falls through to fallback #5 → opens wherever focused currently points. If you switch workspaces     │
+  │ without startup notification                       │ between launching and the window mapping, it follows your focus.                                                                 │
+  ├────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ exec --no-startup-id                               │ Explicitly disables the startup notification context → same fallback behavior as external launch.                                │
+  ├────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ App is slow to start                               │ The startup sequence expires (60s timeout or 30s after completion). If the window maps after expiry,                             │
+  │                                                    │ startup_workspace_for_window() returns NULL at startup.c:364 and it falls to the focused fallback.                               │
+  ├────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ App doesn't support startup notification           │ Some apps (especially older X11 apps, Electron apps, etc.) don't propagate _NET_STARTUP_ID → falls to focused fallback.          │
+  ├────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ App spawns child windows with different leader     │ startup_sequence_get() tries the window's WM_CLIENT_LEADER as fallback (startup.c:307-318), but if the child has no leader or a  │
+  │                                                    │ different one, the lookup fails.                                                                                                 │
+  ├────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ Workspace was renamed                              │ startup_sequence_rename_workspace() handles this, but if something goes wrong there, the stored name won't match.                │
+  └────────────────────────────────────────────────────┴──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+  The focused global is the key variable
+
+  The global focused pointer (src/tree.c:13) tracks the currently focused container. When an app falls through to the fallback, it's focused at the instant manage_window() runs (not when the
+   app was launched) that determines placement. Since manage_window runs synchronously when the X server delivers the MapRequest, any focus change between launching the app and the window
+  appearing will affect placement.
+
+✻ Churned for 1m 11s
+
+❯ Read through log.txt and see why the second time chromium was opened it was in workspace 9 and not 1
+
+● Searched for 4 patterns, read 2 files (ctrl+o to expand)
+
+● Large file. Let me search for the relevant chromium and workspace events.
+
+● Searched for 1 pattern, read 1 file (ctrl+o to expand)
+
+● Let me look at the context around both exec commands to see workspace state and startup notification handling.
+
+● Searched for 1 pattern, read 1 file (ctrl+o to expand)
+
+● Now I can see the critical lines. Let me check what workspace was current when each exec ran and how _NET_WM_DESKTOP maps to workspaces.
+
+● Searched for 1 pattern (ctrl+o to expand)
+
+● Now I have the full picture. Here's what happened:
+
+  Root Cause
+
+  Both times Chromium opened on workspace 9, the startup notification mechanism was completely bypassed. The log shows clearly:
+
+  Both launches (1st at 11:16:38, 2nd at 11:16:44):
+
+  1. Startup notification was created by start_application():
+    - 1st: startup id = i3/chromium/2301-52-comp_TIME3167890
+    - 2nd: startup id = i3/chromium/2301-53-comp_TIME3174707
+  2. But Chromium never set _NET_STARTUP_ID on its window — both times the log shows:
+  No _NET_STARTUP_ID set on window 0x01e00004
+  startup workspace = (null)
+  2. Chromium also has no CLIENT_LEADER set, so the leader fallback in startup_sequence_get() also fails.
+  3. Since startup notification failed, manage_window() falls through to check _NET_WM_DESKTOP. And here's the key line (identical both times):
+
+  Using workspace 0x5ac9bb890470 / 9 because _NET_WM_DESKTOP = 1.
+
+  Why _NET_WM_DESKTOP = 1 maps to workspace "9"
+
+  Chromium is setting _NET_WM_DESKTOP = 1 on its window (EWMH desktop index 1, meaning the second desktop in the zero-indexed EWMH enumeration). The function ewmh_get_workspace_by_index()
+  (src/ewmh.c:355) iterates through workspaces in output order. At that moment you had two workspaces:
+  - Index 0 → workspace "1"
+  - Index 1 → workspace "9"
+
+  So EWMH index 1 resolved to workspace "9" (pointer 0x5ac9bb890470).
+
+  Why Chromium sets _NET_WM_DESKTOP = 1
+
+  Chromium remembers the EWMH desktop index from its previous session. If it was last on the second desktop (index 1), it will set _NET_WM_DESKTOP = 1 on its new window. This is a
+  Chromium-side behavior — it's trying to restore its previous desktop position. But the EWMH index is fragile: it depends on the current ordering and number of existing workspaces. If your
+  workspace layout changed between sessions, the index maps to a different workspace.
+
+  Summary of the chain
+
+  exec chromium (workspace 1 focused)
+    → startup notification created, workspace "1" stored
+    → chromium forks, but does NOT propagate _NET_STARTUP_ID
+    → chromium sets _NET_WM_DESKTOP = 1 on window (from its saved session)
+    → manage_window():
+        1. no swallow match
+        2. no assign match
+        3. _NET_WM_DESKTOP = 1 → ewmh_get_workspace_by_index(1) → workspace "9"  ← WINS
+        4. startup_ws is NULL (never reached)
+        5. focused fallback (never reached)
+    → window opens on workspace 9
+
+  The _NET_WM_DESKTOP check (priority #3 in manage.c:317-332) takes precedence over the startup notification workspace (priority #4), and since Chromium doesn't support startup notification
+  but does set _NET_WM_DESKTOP, the window always goes where Chromium's saved session state says — which mapped to workspace "9" given your workspace list at that time.

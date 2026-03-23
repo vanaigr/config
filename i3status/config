@@ -34,7 +34,7 @@ wireless _first_ {
 
 battery all {
         format = "🔋 %status %percentage %remaining"
-        low_threshold = 25
+        low_threshold = 40
         threshold_type = "percentage"
         color_bad = "#FF0000"
 }

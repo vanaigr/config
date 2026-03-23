@@ -20,7 +20,9 @@ keymap:
       Alt-m: Enter
       Alt-i: Esc
       Alt-u: Esc
-      Esc: reserved
+      #Esc: reserved
+      Ctrl_L: reserved
+
 
       # If you hash sysrq 5 times and reverse the letters, you will get prtsc,
       # so this is obviously(.) print screen key.
