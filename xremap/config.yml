@@ -3,7 +3,7 @@ modmap:
   - name: Keys
     remap:
       CapsLock: Super_L
-      Super_L: Shift_L
+      Super_L: Shift_R
       Alt_R: Ctrl_L
 #      Ctrl_R: Shift_L
 
@@ -14,8 +14,7 @@ keymap:
       Alt-j: down
       Alt-k: up
       Alt-l: right
-      Alt-w: backspace # for now to learn
-      #Alt-w: reserved # for now to learn
+      Alt-w: backspace
       Alt-f: backspace
       Alt-m: Enter
       Alt-i: Esc
@@ -23,14 +22,14 @@ keymap:
       #Esc: reserved
       Ctrl_L: reserved
 
+      Shift_L-Shift_R-s:
+        launch: ["bash", "-c", "DISPLAY=:0 flameshot gui"]
 
       # If you hash sysrq 5 times and reverse the letters, you will get prtsc,
       # so this is obviously(.) print screen key.
       # doesn't work now. WTF
       sysrq:
-        launch: ["flameshot", "gui"]
-
-      #Alt-e: reserved # for now to learn
+        launch: ["bash", "-c", "DISPLAY=:0 flameshot gui"]
 
       Super-z:
         remap:
