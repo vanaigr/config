@@ -99,9 +99,7 @@ if not ok then capabilities = nil end
 
 -- use mason path for lsps
 local mason_path = vim.fn.stdpath('data') .. '/mason/bin'
-
--- Do this manually since Mason is slow
-local lspconfig = require('lspconfig')
+print(mason_path)
 
 local function conf(name, f, skip)
     if skip then
@@ -133,9 +131,9 @@ conf('clang', function()
         cmd = { mason_path .. '/clangd' },
         capabilities = capabilities,
     })
+    vim.lsp.enable('clangd')
 end)
 
---require("lspconfig.configs").vtsls = require("vtsls").lspconfig
 conf(false, 'typescript', function()
     require("vtsls")
     vim.lsp.enable('vtsls')
@@ -201,10 +199,6 @@ conf('typescript-tools', function()
     }
 end)
 ]]
-
--- NEVER complete : . Especially if you are trash and
--- complete it even when it already exists
--- conf('css', function() lspconfig.cssls.setup{} end)
 
 conf('rust', function()
     vim.lsp.config('rust_analyzer', {
