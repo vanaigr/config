@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=Mailto Handler
+# absolute joke(path)
+Exec=/home/me/gh/config/mailto-copy/script.sh %u
+Type=Application
+Terminal=false
+MimeType=x-scheme-handler/mailto;
