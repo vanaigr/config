@@ -19,7 +19,7 @@ require('lazy').setup({
     { 'brenoprata10/nvim-highlight-colors' },
     { 'rose-pine/neovim', name = 'rose-pine' },
     {
-        'Wansmer/treesj',
+        'vanaigr/treesj',
         dependencies = { 'nvim-treesitter/nvim-treesitter' },
         event = 'User load-treesj'
     },
